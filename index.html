@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мій проект</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0c0e;
+      --surface: #111316;
+      --border: #1e2126;
+      --accent: #c8a96e;
+      --accent2: #7b9cce;
+      --text: #e8e4dc;
+      --muted: #6b6b6b;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.4rem 3rem;
+      border-bottom: 1px solid transparent;
+      z-index: 100;
+      transition: border-color .4s, backdrop-filter .4s, background .4s;
+    }
+    nav.scrolled {
+      border-color: var(--border);
+      backdrop-filter: blur(20px);
+      background: rgba(11,12,14,.7);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      color: var(--accent);
+      letter-spacing: .04em;
+    }
+    .nav-links { display: flex; gap: 2.4rem; list-style: none; }
+    .nav-links a {
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .3s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 4rem 4rem 6rem;
+      position: relative;
+      z-index: 2;
+      opacity: 0;
+      transform: translateX(-30px);
+      animation: slideIn .9s .2s forwards;
+    }
+
+    .hero-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--accent);
+      margin-bottom: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 2.5rem;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(3.2rem, 6vw, 5.5rem);
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      margin-bottom: 1.6rem;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #9a9590;
+      max-width: 360px;
+      margin-bottom: 3rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0b0c0e;
+      padding: .85rem 2.2rem;
+      font-family: var(--sans);
+      font-size: .82rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      border: none;
+      cursor: pointer;
+      transition: background .3s, transform .2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: #dbbf87; transform: translateY(-2px); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      padding: .85rem 2.2rem;
+      font-size: .82rem;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color .3s, color .3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--text); color: var(--accent); }
+
+    /* hero right — decorative panel */
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 1.2s .5s forwards;
+    }
+    .hero-right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 60% 50%, rgba(200,169,110,.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 80% 20%, rgba(123,156,206,.1) 0%, transparent 60%);
+    }
+
+    .hero-card {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 340px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2.4rem;
+    }
+    .hero-card-img {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: #0b0c0e;
+      font-weight: 900;
+    }
+    .hero-card h3 {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      margin-bottom: .3rem;
+    }
+    .hero-card p { font-size: .85rem; color: var(--muted); margin-bottom: 1.6rem; }
+    .hero-card-tags { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .tag {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: .3rem .75rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* floating numbers */
+    .big-num {
+      position: absolute;
+      font-family: var(--serif);
+      font-size: 18rem;
+      font-weight: 900;
+      color: rgba(200,169,110,.04);
+      line-height: 1;
+      user-select: none;
+      right: -2rem;
+      bottom: -3rem;
+    }
+
+    /* ── SECTIONS SHARED ── */
+    section { padding: 7rem 6rem; }
+    section:nth-child(even) { background: var(--surface); }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 4rem;
+    }
+    .section-head span {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--accent);
+    }
+    .section-head h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin-left: 1rem;
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+    .about-text p {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: #9a9590;
+      margin-bottom: 1.4rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    .stat-item {
+      border-left: 2px solid var(--accent);
+      padding-left: 1.2rem;
+    }
+    .stat-num {
+      font-family: var(--serif);
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: .3rem;
+    }
+    .stat-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .skill-card {
+      background: var(--bg);
+      padding: 2.2rem 1.8rem;
+      transition: background .3s;
+      cursor: default;
+    }
+    section:nth-child(even) .skill-card { background: var(--surface); }
+    .skill-card:hover { background: #13161a; }
+    .skill-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .skill-card h4 {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      margin-bottom: .6rem;
+    }
+    .skill-card p { font-size: .83rem; color: var(--muted); line-height: 1.7; }
+    .skill-bar {
+      height: 2px;
+      background: var(--border);
+      margin-top: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .skill-bar-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0;
+      transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── PROJECTS ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .project-card {
+      border: 1px solid var(--border);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .3s, transform .3s;
+      background: var(--bg);
+    }
+    section:nth-child(even) .project-card { background: var(--surface); }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .4s;
+    }
+    .project-card:hover::before { transform: scaleX(1); }
+    .project-card:hover { border-color: rgba(200,169,110,.3); transform: translateY(-4px); }
+    .project-num {
+      font-family: var(--serif);
+      font-size: .75rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      margin-bottom: 1.2rem;
+    }
+    .project-card h3 {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      margin-bottom: .8rem;
+    }
+    .project-card p { font-size: .85rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+    .project-link {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      transition: gap .3s;
+    }
+    .project-link:hover { gap: 1rem; }
+
+    /* ── CONTACT ── */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 6rem;
+    }
+    .contact-info h3 {
+      font-family: var(--serif);
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    .contact-info p { color: var(--muted); line-height: 1.8; margin-bottom: 2.5rem; font-size: .95rem; }
+    .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-link-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: var(--text);
+      font-size: .88rem;
+      transition: color .3s;
+    }
+    .contact-link-item:hover { color: var(--accent); }
+    .contact-link-item .icon { width: 2.5rem; height: 2.5rem; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: .5rem; }
+    .form-group label { font-size: .72rem; text-transform: uppercase; letter-spacing: .15em; color: var(--muted); }
+    .form-group input, .form-group textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .9rem 1.1rem;
+      font-family: var(--sans);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .3s;
+      resize: none;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+    textarea { min-height: 120px; }
+    .form-submit { text-align: right; }
+    #formMsg { font-size: .82rem; color: var(--accent); margin-top: .5rem; opacity: 0; transition: opacity .4s; }
+    #formMsg.show { opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #080809;
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; transition: color .3s; }
+    footer a:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes slideIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .7s, transform .7s;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── CURSOR DOT ── */
+    .cursor {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      mix-blend-mode: difference;
+      transition: transform .15s;
+    }
+    .cursor-ring {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(200,169,110,.5);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: left .12s, top .12s, transform .2s;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      #hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .hero-left { padding: 7rem 3rem 4rem; }
+      section { padding: 5rem 3rem; }
+      .about-grid, .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
+      .projects-grid { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+    @media (max-width: 640px) {
+      .projects-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">МП</div>
+    <ul class="nav-links">
+      <li><a href="#about">Про мене</a></li>
+      <li><a href="#skills">Навички</a></li>
+      <li><a href="#projects">Проекти</a></li>
+      <li><a href="#contact">Контакт</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-left">
+      <div class="hero-label">Доступний для співпраці</div>
+      <h1>Мій<br><em>проект</em><br>— онлайн</h1>
+      <p class="hero-desc">
+        Розробляю зручні та красиві цифрові рішення. Поєдную дизайн і технології для реальних результатів.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">Переглянути роботи</a>
+        <a href="#contact" class="btn-ghost">Зв'язатись</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="hero-card-img">МП</div>
+        <h3>Мій проект</h3>
+        <p>Розробник / Дизайнер</p>
+        <div class="hero-card-tags">
+          <span class="tag">Web</span>
+          <span class="tag">UI/UX</span>
+          <span class="tag">JS</span>
+          <span class="tag">CSS</span>
+        </div>
+      </div>
+      <div class="big-num">1</div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-head reveal">
+      <span>01</span>
+      <h2>Про мене</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>
+          Привіт! Я — творець цифрового досвіду, що поєднує чистий код та виразний дизайн.
+          Мій підхід — слухати, аналізувати, створювати.
+        </p>
+        <p>
+          Кожен проект для мене — це можливість вирішити реальну задачу та залишити відчутний слід.
+          Мені важливо, щоб кожна деталь була продумана і доречна.
+        </p>
+        <br>
+        <a href="#contact" class="btn-ghost" style="display:inline-block">Написати мені →</a>
+      </div>
+      <div class="stats reveal">
+        <div class="stat-item">
+          <div class="stat-num" data-count="42">0</div>
+          <div class="stat-label">Завершених проектів</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-count="5">0</div>
+          <div class="stat-label">Років досвіду</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-count="28">0</div>
+          <div class="stat-label">Задоволених клієнтів</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-count="12">0</div>
+          <div class="stat-label">Нагород та визнань</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-head reveal">
+      <span>02</span>
+      <h2>Навички</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid reveal">
+      <div class="skill-card">
+        <div class="skill-icon">⚡</div>
+        <h4>HTML / CSS</h4>
+        <p>Семантична розмітка, адаптивні макети, анімації та сучасні CSS-техніки.</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="92"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🔧</div>
+        <h4>JavaScript</h4>
+        <p>ES6+, DOM-маніпуляції, асинхронний код та взаємодія з API.</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="85"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">⚛️</div>
+        <h4>React / Vue</h4>
+        <p>Компонентний підхід, стан, хуки та побудова SPA-застосунків.</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="78"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🎨</div>
+        <h4>UI / UX Дизайн</h4>
+        <p>Прототипування, Figma, дослідження користувача та дизайн-системи.</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="80"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🗄️</div>
+        <h4>Node.js / API</h4>
+        <p>REST API, Express, робота з базами даних та серверна логіка.</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="70"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">📱</div>
+        <h4>Адаптивність</h4>
+        <p>Mobile-first підхід, кросбраузерність та доступність (a11y).</p>
+        <div class="skill-bar"><div class="skill-bar-fill" data-width="90"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-head reveal">
+      <span>03</span>
+      <h2>Проекти</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <div class="project-num">// 001</div>
+        <h3>Інтернет-магазин</h3>
+        <p>Повноцінна e-commerce платформа з кошиком, фільтрами та оплатою онлайн.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+      <div class="project-card reveal" style="transition-delay:.1s">
+        <div class="project-num">// 002</div>
+        <h3>Дашборд аналітики</h3>
+        <p>Інтерактивний дашборд для візуалізації бізнес-даних та KPI в реальному часі.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+      <div class="project-card reveal" style="transition-delay:.2s">
+        <div class="project-num">// 003</div>
+        <h3>Мобільний застосунок</h3>
+        <p>Кросплатформний мобільний додаток для планування задач і командної роботи.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+      <div class="project-card reveal" style="transition-delay:.3s">
+        <div class="project-num">// 004</div>
+        <h3>Корпоративний сайт</h3>
+        <p>Представницький сайт для середнього бізнесу з CMS та SEO-оптимізацією.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+      <div class="project-card reveal" style="transition-delay:.4s">
+        <div class="project-num">// 005</div>
+        <h3>Дизайн-система</h3>
+        <p>Набір UI-компонентів та гайдлайнів для масштабованих продуктів.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+      <div class="project-card reveal" style="transition-delay:.5s">
+        <div class="project-num">// 006</div>
+        <h3>API-інтеграція</h3>
+        <p>Мікросервісна архітектура з інтеграцією сторонніх платіжних і логістичних API.</p>
+        <a href="#" class="project-link">Детальніше <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-head reveal">
+      <span>04</span>
+      <h2>Контакт</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="contact-layout">
+      <div class="contact-info reveal">
+        <h3>Давайте створимо щось разом</h3>
+        <p>Маєте ідею або проект? Напишіть — я відповім протягом 24 годин.</p>
+        <div class="contact-links">
+          <a href="mailto:hello@miiproekt.ua" class="contact-link-item">
+            <span class="icon">✉</span> hello@miiproekt.ua
+          </a>
+          <a href="tel:+380991234567" class="contact-link-item">
+            <span class="icon">☎</span> +38 099 123 45 67
+          </a>
+          <a href="#" class="contact-link-item">
+            <span class="icon">in</span> LinkedIn профіль
+          </a>
+          <a href="#" class="contact-link-item">
+            <span class="icon">gh</span> GitHub профіль
+          </a>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay:.15s">
+        <div class="contact-form" id="contactForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ім'я</label>
+              <input type="text" id="fname" placeholder="Тарас" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="femail" placeholder="taras@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Тема</label>
+            <input type="text" id="fsubject" placeholder="Про що хочете поговорити?" />
+          </div>
+          <div class="form-group">
+            <label>Повідомлення</label>
+            <textarea id="fmessage" placeholder="Розкажіть про ваш проект..."></textarea>
+          </div>
+          <div class="form-submit">
+            <button class="btn-primary" id="sendBtn" onclick="sendForm()">Надіслати повідомлення</button>
+            <p id="formMsg">✓ Повідомлення надіслано! Дякую.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2024 Мій проект. Усі права захищені.</span>
+    <span>Зроблено з ❤ в Україні</span>
+    <span><a href="#">Назад нагору ↑</a></span>
+  </footer>
+
+  <script>
+    // ── CUSTOM CURSOR ──
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx - 4 + 'px';
+      cursor.style.top  = my - 4 + 'px';
+    });
+    (function animRing() {
+      rx += (mx - rx) * .14;
+      ry += (my - ry) * .14;
+      ring.style.left = rx - 16 + 'px';
+      ring.style.top  = ry - 16 + 'px';
+      requestAnimationFrame(animRing);
+    })();
+    document.querySelectorAll('a, button, .project-card, .skill-card').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2.5)'; ring.style.transform = 'scale(1.6)'; });
+      el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; });
+    });
+
+    // ── STICKY NAV ──
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', scrollY > 60);
+    });
+
+    // ── SCROLL REVEAL ──
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          // trigger skill bars
+          e.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
+            bar.style.width = bar.dataset.width + '%';
+          });
+          // trigger counters
+          e.target.querySelectorAll('[data-count]').forEach(el => animCount(el));
+        }
+      });
+    }, { threshold: .15 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ── COUNTER ANIMATION ──
+    function animCount(el) {
+      const target = +el.dataset.count;
+      let cur = 0;
+      const step = target / 50;
+      const t = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        el.textContent = Math.round(cur) + '+';
+        if (cur >= target) clearInterval(t);
+      }, 30);
+    }
+
+    // ── FORM ──
+    function sendForm() {
+      const name = document.getElementById('fname').value.trim();
+      const email = document.getElementById('femail').value.trim();
+      const msg = document.getElementById('fmessage').value.trim();
+      if (!name || !email || !msg) {
+        alert('Будь ласка, заповніть обов\'язкові поля: ім\'я, email та повідомлення.');
+        return;
+      }
+      const btn = document.getElementById('sendBtn');
+      btn.textContent = 'Надсилання...';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = '✓ Надіслано';
+        document.getElementById('formMsg').classList.add('show');
+        document.getElementById('fname').value = '';
+        document.getElementById('femail').value = '';
+        document.getElementById('fsubject').value = '';
+        document.getElementById('fmessage').value = '';
+      }, 1000);
+    }
+
+    // ── SMOOTH SCROLL for footer link ──
+    document.querySelector('footer a').addEventListener('click', e => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
